@@ -6,27 +6,67 @@ Levantar o estado real do ambiente antes de qualquer reset, mudança de licença
 
 ## FortiGate 01
 
-- Hostname: `PENDENTE`
-- Função futura: `FGT-HQ`
-- FortiOS: `PENDENTE`
-- Build: `PENDENTE`
-- Modelo VM: `PENDENTE`
-- Status da licença: `PENDENTE`
-- vCPU: `PENDENTE`
-- RAM: `PENDENTE`
-- Interfaces disponíveis: `PENDENTE`
-- Serial sanitizado: `PENDENTE`
+- Hostname: `FGT-1`
+- Função futura: `FGT-HQ` (proposta inicial)
+- FortiOS: `v7.6.6`
+- Build: `3652 (GA.M)`
+- Modelo VM: `FortiGate-VM64-KVM`
+- Security Level: `High`
+- Status da licença: `Valid`
+- vCPU: `1 CPU / 1 allowed`
+- RAM: `1993 MB / 2048 MB allowed`
+- VDOMs: `máximo 2`, atualmente `root`
+- Operation Mode: `NAT`
+- HA atual: `A-P, primary`
+- Log hard disk: `Available`
+- Interfaces disponíveis: `port1`, `port2`, `port3`
+- Serial sanitizado: `FGVM********SAC8`
 - Configuração atual exportada: `PENDENTE`
 - Snapshot realizado: `PENDENTE`
 
-### Coleta necessária
+### Estado atual das interfaces
+
+| Interface | Modo | Endereço | Estado | Observação |
+|---|---|---|---|---|
+| `port1` | static | `0.0.0.0/0` | up | Sem IPv4 configurado |
+| `port2` | static | `10.10.10.1/24` | down | LAN antiga / estado anterior |
+| `port3` | static | `192.168.1.20/24` | up | Rede atual de gerenciamento/conectividade |
+
+### Estado atual de roteamento
+
+```text
+S* 0.0.0.0/0 via 192.168.1.1, port3
+C  192.168.1.0/24 directly connected, port3
+```
+
+### Capacidade observada
+
+Coleta imediatamente após reboot:
+
+- CPU idle: aproximadamente `87%`
+- Memória utilizada: aproximadamente `48.4%`
+- Sessões médias no primeiro minuto: `32`
+- Uptime no momento da coleta: aproximadamente `2 minutos`
+
+> Observação: estes números representam o estado imediatamente após boot e não devem ser utilizados isoladamente como baseline definitivo de performance.
+
+### Observações técnicas
+
+1. A licença está válida no momento da coleta.
+2. O appliance está limitado/licenciado para `1 vCPU` e `2048 MB RAM`.
+3. Existem três interfaces virtuais visíveis (`port1` a `port3`).
+4. O equipamento possui configuração anterior, incluindo rota default pela `port3`.
+5. O equipamento aparece como `HA A-P primary`; antes do reset será necessário registrar e remover de forma controlada qualquer configuração HA existente.
+6. As bases FortiGuard/IPS exibidas não serão usadas como evidência de assinatura atualizada; a fase inicial deste projeto concentra-se em routing, VPN, gerenciamento e operação.
+
+### Coleta ainda necessária
 
 ```shell
-get system status
-get system performance status
-get system interface physical
 show system interface
-get router info routing-table all
+show system ha
+get system ha status
+show router static
+show firewall policy
 ```
 
 ## FortiGate 02
@@ -94,8 +134,9 @@ Não executar factory reset antes de:
 2. salvar backup da configuração;
 3. criar snapshot da VM;
 4. registrar a versão do FortiOS;
-5. confirmar que a recuperação da licença é possível.
+5. confirmar que a recuperação da licença é possível;
+6. registrar/remover configuração HA existente de forma controlada.
 
 ## Status
 
-`ABERTO`
+`EM ANDAMENTO — FGT-01 inventariado parcialmente`
