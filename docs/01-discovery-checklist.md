@@ -71,27 +71,69 @@ show firewall policy
 
 ## FortiGate 02
 
-- Hostname: `PENDENTE`
-- Função futura: `FGT-BR01`
-- FortiOS: `PENDENTE`
-- Build: `PENDENTE`
-- Modelo VM: `PENDENTE`
-- Status da licença: `PENDENTE`
-- vCPU: `PENDENTE`
-- RAM: `PENDENTE`
-- Interfaces disponíveis: `PENDENTE`
-- Serial sanitizado: `PENDENTE`
+- Hostname: `FGT-2`
+- Função futura: `FGT-BR01` (proposta inicial)
+- FortiOS: `v7.6.6`
+- Build: `3652 (GA.M)`
+- Modelo VM: `FortiGate-VM64-KVM`
+- Security Level: `High`
+- Status da licença: `Valid`
+- vCPU: `1 CPU / 1 allowed`
+- RAM: `1993 MB / 2048 MB allowed`
+- VDOMs: `máximo 2`, atualmente `root`
+- Operation Mode: `NAT`
+- HA atual: `A-P, secondary`
+- Log hard disk: `Available`
+- Interfaces disponíveis: `port1`, `port2`, `port3`
+- Serial sanitizado: `FGVM********Y6A6`
 - Configuração atual exportada: `PENDENTE`
 - Snapshot realizado: `PENDENTE`
+- File system warning: `PRESENTE — scan recomendado pelo FortiOS`
 
-### Coleta necessária
+### Estado atual das interfaces
+
+| Interface | Modo | Endereço | Estado | Observação |
+|---|---|---|---|---|
+| `port1` | static | `0.0.0.0/0` | up | Sem IPv4 configurado |
+| `port2` | static | `10.10.10.1/24` | down | LAN antiga / configuração sincronizada do cluster |
+| `port3` | static | `192.168.1.20/24` | up | Rede atual de gerenciamento/conectividade |
+
+### Estado atual de roteamento
+
+O comando `get router info routing-table all` não apresentou entradas durante a coleta no membro secundário.
+
+> Observação: como o equipamento está em HA `A-P secondary`, essa ausência será analisada junto com o estado completo do cluster antes de qualquer conclusão sobre a configuração de roteamento.
+
+### Capacidade observada
+
+Coleta imediatamente após reboot:
+
+- CPU idle: aproximadamente `97%`
+- Memória utilizada: aproximadamente `47.6%`
+- Sessões médias no primeiro minuto: `14`
+- Uptime no momento da coleta: aproximadamente `4 minutos`
+
+> Observação: estes números representam o estado imediatamente após boot e não devem ser utilizados isoladamente como baseline definitivo de performance.
+
+### Observações técnicas
+
+1. A licença está válida no momento da coleta.
+2. O appliance apresenta os mesmos limites de recursos observados no FGT-1: `1 vCPU` e `2048 MB RAM`.
+3. Existem três interfaces virtuais visíveis (`port1` a `port3`).
+4. O equipamento aparece como `HA A-P secondary`, confirmando que os dois FortiGates atualmente fazem parte de um cluster HA.
+5. As interfaces apresentam os mesmos endereços vistos no FGT-1, compatível com configuração sincronizada de cluster.
+6. O FortiOS exibiu aviso de possível inconsistência de filesystem após reboot inseguro. Antes de reutilizar a VM no projeto, será necessário identificar o disco com `execute disk list` e executar o scan recomendado em janela controlada.
+7. Não executar factory reset antes de registrar a configuração HA, realizar backup/snapshot e tratar o alerta de filesystem.
+
+### Coleta ainda necessária
 
 ```shell
-get system status
-get system performance status
-get system interface physical
+execute disk list
 show system interface
-get router info routing-table all
+show system ha
+get system ha status
+show router static
+show firewall policy
 ```
 
 ## Host / GNS3 Server
@@ -135,8 +177,9 @@ Não executar factory reset antes de:
 3. criar snapshot da VM;
 4. registrar a versão do FortiOS;
 5. confirmar que a recuperação da licença é possível;
-6. registrar/remover configuração HA existente de forma controlada.
+6. registrar/remover configuração HA existente de forma controlada;
+7. tratar alertas de filesystem antes de reutilizar a VM.
 
 ## Status
 
-`EM ANDAMENTO — FGT-01 inventariado parcialmente`
+`EM ANDAMENTO — FGT-01 e FGT-02 inventariados parcialmente; HA e filesystem do FGT-02 ainda pendentes`
