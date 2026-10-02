@@ -64,7 +64,6 @@ Coleta imediatamente após reboot:
 ```shell
 show system interface
 show system ha
-get system ha status
 show router static
 show firewall policy
 ```
@@ -115,6 +114,34 @@ Coleta imediatamente após reboot:
 
 > Observação: estes números representam o estado imediatamente após boot e não devem ser utilizados isoladamente como baseline definitivo de performance.
 
+### Disco / filesystem
+
+`execute disk list` identificou:
+
+```text
+Disk Virtual-Disk ref: 16  2.0 GiB  type: IDE [Virtio Disk]  dev: /dev/vdb
+partition ref: 17  1.9 GiB, 1.9 GiB free, mounted: Y, dev: /dev/vdb1
+```
+
+O alerta de filesystem deve ser tratado antes da reutilização definitiva desta VM. O scan recomendado pelo próprio FortiOS é `execute disk scan 16` e implica reboot durante o processo.
+
+### HA atual confirmado
+
+O cluster foi confirmado como saudável e sincronizado:
+
+- Mode: `HA A-P`
+- Group Name: `LAB-HA`
+- Group ID: `1`
+- Health: `OK`
+- Membros: `2`
+- Primary: `FGT-1`
+- Secondary: `FGT-2`
+- Configuration Status: `in-sync` em ambos
+- Heartbeat device: `port1`
+- Session pickup: `enabled`
+
+O FGT-1 foi selecionado como primary por prioridade superior em relação ao FGT-2.
+
 ### Observações técnicas
 
 1. A licença está válida no momento da coleta.
@@ -122,16 +149,15 @@ Coleta imediatamente após reboot:
 3. Existem três interfaces virtuais visíveis (`port1` a `port3`).
 4. O equipamento aparece como `HA A-P secondary`, confirmando que os dois FortiGates atualmente fazem parte de um cluster HA.
 5. As interfaces apresentam os mesmos endereços vistos no FGT-1, compatível com configuração sincronizada de cluster.
-6. O FortiOS exibiu aviso de possível inconsistência de filesystem após reboot inseguro. Antes de reutilizar a VM no projeto, será necessário identificar o disco com `execute disk list` e executar o scan recomendado em janela controlada.
-7. Não executar factory reset antes de registrar a configuração HA, realizar backup/snapshot e tratar o alerta de filesystem.
+6. O FortiOS exibiu aviso de possível inconsistência de filesystem após reboot inseguro. O disco relevante foi identificado como `ref 16`, `/dev/vdb`.
+7. O cluster encontra-se `in-sync`, com heartbeat pela `port1` e dois membros ativos no domínio HA.
+8. Não executar factory reset antes de registrar a configuração HA completa, realizar backup/snapshot e concluir o scan do filesystem.
 
 ### Coleta ainda necessária
 
 ```shell
-execute disk list
 show system interface
 show system ha
-get system ha status
 show router static
 show firewall policy
 ```
@@ -178,8 +204,9 @@ Não executar factory reset antes de:
 4. registrar a versão do FortiOS;
 5. confirmar que a recuperação da licença é possível;
 6. registrar/remover configuração HA existente de forma controlada;
-7. tratar alertas de filesystem antes de reutilizar a VM.
+7. concluir o tratamento do filesystem do FGT-02;
+8. fechar o design TO-BE da topologia.
 
 ## Status
 
-`EM ANDAMENTO — FGT-01 e FGT-02 inventariados parcialmente; HA e filesystem do FGT-02 ainda pendentes`
+`EM ANDAMENTO — FGT-01 e FGT-02 inventariados; HA confirmado; filesystem do FGT-02 e backups ainda pendentes`
